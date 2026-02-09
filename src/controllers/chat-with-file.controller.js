@@ -4,8 +4,15 @@ import { v4 as uuidv4 } from "uuid";
 
 export async function chatWithFile(req, res) {
   try {
-    const extractedText = req.extractedText;
+    let extractedText = req.extractedText;
     const userQuestion = req.body.message || "Analiza el documento.";
+
+    // Truncate text if it's too long to avoid token limits (suggested by review)
+    const MAX_TEXT_LENGTH = 50000;
+    if (extractedText && extractedText.length > MAX_TEXT_LENGTH) {
+      console.warn(`Document text truncated from ${extractedText.length} to ${MAX_TEXT_LENGTH} chars`);
+      extractedText = extractedText.substring(0, MAX_TEXT_LENGTH) + "... [Texto truncado por límite de tokens]";
+    }
 
     let conversationId = req.body.conversation_id;
 
