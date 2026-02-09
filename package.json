@@ -1,0 +1,18 @@
+{
+  "name": "inventario-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "node src/app.js"
+  },
+  "dependencies": {
+    "@azure/ai-form-recognizer": "^5.1.0",
+    "axios": "^1.13.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "multer": "^2.0.2",
+    "winston": "^3.19.0"
+  }
+}
