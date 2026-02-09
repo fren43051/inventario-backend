@@ -1,13 +1,13 @@
-let history = [];
+const conversations = new Map();
 
-export const addMessage = (role, content) => {
-    history.push({ role, content });
+export const getConversation = (conversationId) => {
+    return conversations.get(conversationId) || [];
 };
 
-export const getHistory = () => {
-    return history;
+export const saveConversation = (conversationId, messages) => {
+    conversations.set(conversationId, messages);
 };
 
-export const clearHistory = () => {
-    history = [];
+export const clearConversation = (conversationId) => {
+    conversations.delete(conversationId);
 };

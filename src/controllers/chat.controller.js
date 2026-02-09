@@ -1,24 +1,34 @@
 import { callFoundry } from "../services/foundry.service.js";
-import { addMessage } from "../services/conversation.service.js";
+import { getConversation, saveConversation } from "../services/conversation.service.js";
 import { logger } from "../utils/logger.js";
+import { v4 as uuidv4 } from "uuid";
 
 export const sendMessage = async (req, res) => {
     try {
         const { message } = req.body;
+        let conversationId = req.body.conversation_id;
 
-        logger.info(`Mensaje recibido del usuario: ${message}`);
+        if (!conversationId) {
+            conversationId = uuidv4();
+        }
 
-        addMessage("user", message);
+        logger.info(`Mensaje recibido del usuario (${conversationId}): ${message}`);
 
-        const response = await callFoundry(message);
+        let history = getConversation(conversationId);
+
+        const response = await callFoundry(message, conversationId);
 
         const assistantMessage =
             response?.choices?.[0]?.message?.content || "No pude generar respuesta.";
 
-        addMessage("assistant", assistantMessage);
+        // Update history
+        history.push({ role: "user", content: message });
+        history.push({ role: "assistant", content: assistantMessage });
+        saveConversation(conversationId, history);
 
         res.json({
             success: true,
+            conversation_id: conversationId,
             response: assistantMessage
         });
     } catch (error) {

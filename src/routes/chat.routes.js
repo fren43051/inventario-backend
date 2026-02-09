@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { sendMessage } from "../controllers/chat.controller.js";
-import { clearHistory } from "../services/conversation.service.js";
+import { clearConversation } from "../services/conversation.service.js";
 
 const router = Router();
 
@@ -9,10 +9,15 @@ router.post("/", sendMessage);
 
 // Ruta para limpiar el historial de conversación
 router.post("/reset", (req, res) => {
-    clearHistory();
+    const { conversation_id } = req.body;
+
+    if (conversation_id) {
+        clearConversation(conversation_id);
+    }
+
     res.json({
         success: true,
-        message: "Historial limpiado."
+        message: conversation_id ? `Historial ${conversation_id} limpiado.` : "No se proporcionó conversation_id."
     });
 });
 

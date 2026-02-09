@@ -1,44 +1,57 @@
 import { callAzureChatCompletion } from "../services/azureOpenAI.js";
+import { getConversation, saveConversation } from "../services/conversation.service.js";
+import { v4 as uuidv4 } from "uuid";
 
 export async function chatWithFile(req, res) {
   try {
-    let extractedText = req.extractedText; // Viene del OCR middleware
+    const extractedText = req.extractedText;
     const userQuestion = req.body.message || "Analiza el documento.";
 
-    // Truncate text if it's too long to avoid token limits (rough estimate)
-    const MAX_TEXT_LENGTH = 50000;
-    if (extractedText && extractedText.length > MAX_TEXT_LENGTH) {
-        console.warn(`Document text truncated from ${extractedText.length} to ${MAX_TEXT_LENGTH} chars`);
-        extractedText = extractedText.substring(0, MAX_TEXT_LENGTH) + "... [Truncado por límite de tamaño]";
+    let conversationId = req.body.conversation_id;
+
+    if (!conversationId) {
+      conversationId = uuidv4();
     }
 
-    const messages = [
-      {
+    let history = getConversation(conversationId);
+
+    if (history.length === 0) {
+      history.push({
         role: "system",
         content: "Eres un experto analizando documentos técnicos. Responde con precisión."
-      },
-      {
-        role: "user",
-        content: `Texto del documento:\n\n${extractedText}`
-      },
-      {
-        role: "user",
-        content: userQuestion
-      }
-    ];
+      });
+    }
 
-    const assistantReply = await callAzureChatCompletion(messages);
+    history.push({
+      role: "user",
+      content: `Texto del documento:\n\n${extractedText}`
+    });
+
+    history.push({
+      role: "user",
+      content: userQuestion
+    });
+
+    const assistantReply = await callAzureChatCompletion(history);
+
+    history.push({
+      role: "assistant",
+      content: assistantReply
+    });
+
+    saveConversation(conversationId, history);
 
     res.json({
       success: true,
+      conversation_id: conversationId,
       response: assistantReply
     });
 
   } catch (error) {
     console.error("Error en chatWithFile:", error.response?.data || error.message);
     res.status(500).json({
-        success: false,
-        error: error.message || "Error procesando el documento con el asistente."
+      success: false,
+      error: "Error procesando el documento con el asistente."
     });
   }
 }
