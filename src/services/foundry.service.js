@@ -1,16 +1,17 @@
 import axios from "axios";
-import dotenv from "dotenv";
 import { getConversation } from "./conversation.service.js";
 import { logger } from "../utils/logger.js";
 
-dotenv.config();
-
-const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-const apiKey = process.env.AZURE_OPENAI_API_KEY;
-const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
-const apiVersion = process.env.AZURE_OPENAI_API_VERSION;
+const endpoint = process.env.AZURE_OPENAI_ENDPOINT || process.env.AZ_OPENAI_ENDPOINT;
+const apiKey = process.env.AZURE_OPENAI_API_KEY || process.env.AZ_OPENAI_KEY;
+const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AZ_OPENAI_DEPLOYMENT;
+const apiVersion = process.env.AZURE_OPENAI_API_VERSION || "2025-01-01-preview";
 
 export const callFoundry = async (message, conversationId = null) => {
+    if (!endpoint || !apiKey || !deployment) {
+        throw new Error("Azure OpenAI is not properly configured for Foundry service.");
+    }
+
     const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
 
     const history = conversationId ? getConversation(conversationId) : [];
@@ -35,7 +36,8 @@ export const callFoundry = async (message, conversationId = null) => {
                 headers: {
                     "Content-Type": "application/json",
                     "api-key": apiKey
-                }
+                },
+                timeout: 60000
             }
         );
 

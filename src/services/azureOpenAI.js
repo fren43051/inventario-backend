@@ -1,16 +1,16 @@
 import axios from "axios";
 
-const endpoint = process.env.AZ_OPENAI_ENDPOINT || process.env.AZURE_OPENAI_ENDPOINT;
-const apiKey = process.env.AZ_OPENAI_KEY || process.env.AZURE_OPENAI_API_KEY;
-const deployment = process.env.AZ_OPENAI_DEPLOYMENT || process.env.AZURE_OPENAI_DEPLOYMENT;
+const endpoint = process.env.AZURE_OPENAI_ENDPOINT || process.env.AZ_OPENAI_ENDPOINT;
+const apiKey = process.env.AZURE_OPENAI_API_KEY || process.env.AZ_OPENAI_KEY;
+const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AZ_OPENAI_DEPLOYMENT;
 const apiVersion = process.env.AZURE_OPENAI_API_VERSION || "2025-01-01-preview";
 
 if (!endpoint || !apiKey) {
-  throw new Error("Missing required env vars: AZ_OPENAI_ENDPOINT (or AZURE_OPENAI_ENDPOINT) and AZ_OPENAI_KEY (or AZURE_OPENAI_API_KEY) must be set.");
+  throw new Error("Missing required env vars: AZURE_OPENAI_ENDPOINT (or AZ_OPENAI_ENDPOINT) and AZURE_OPENAI_API_KEY (or AZ_OPENAI_KEY) must be set.");
 }
 
 if (!deployment) {
-    throw new Error("Missing required env var: AZ_OPENAI_DEPLOYMENT or AZURE_OPENAI_DEPLOYMENT must be set.");
+    throw new Error("Missing required env var: AZURE_OPENAI_DEPLOYMENT or AZ_OPENAI_DEPLOYMENT must be set.");
 }
 
 export async function callAzureChatCompletion(messages, options = {}) {
